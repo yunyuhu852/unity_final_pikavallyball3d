@@ -19,7 +19,7 @@ public class PlayerSetting : MonoBehaviour
     public float weight;
     public Vector3 forceDirection;
     public float forceAmount;
-    bool floor;
+    bool floor = true;
 
 
     //rules: scores
@@ -31,6 +31,7 @@ public class PlayerSetting : MonoBehaviour
     Animator animator;
     bool run;
     bool jump;
+    bool inair;
     bool hit;
 
     //audio setting
@@ -62,28 +63,43 @@ public class PlayerSetting : MonoBehaviour
             //WASD, space+ Z
             if (Input.GetKey(KeyCode.W))
             {
+
+                run = true;
                 transform.forward = new Vector3(1, 0, 0);
                 transform.localPosition += transform.forward * Time.deltaTime*movingSpeed;
             }
             if (Input.GetKey(KeyCode.A))
             {
+
+                run = true;
                 transform.forward = new Vector3(0, 0, 1);
                 transform.localPosition += transform.forward * Time.deltaTime * movingSpeed;
             }
             if (Input.GetKey(KeyCode.S))
             {
+
+                run = true;
                 transform.forward = new Vector3(-1, 0, 0);
                 transform.localPosition += transform.forward * Time.deltaTime * movingSpeed;
             }
             if (Input.GetKey(KeyCode.D))
             {
+
+                run = true;
                 transform.forward = new Vector3(0, 0, -1);
                 transform.localPosition += transform.forward * Time.deltaTime * movingSpeed;
             }
             //jump
             if (Input.GetKeyDown(KeyCode.Space))
             {
-                playerRb.AddForce(forceDirection * forceAmount);
+                if (floor)
+                {
+                    playerRb.AddForce(forceDirection * forceAmount);
+                    jump = true;
+                    inair = true;
+
+                    floor = false;
+                }
             }
             //hit
             if (Input.GetKey(KeyCode.Z))
@@ -98,28 +114,39 @@ public class PlayerSetting : MonoBehaviour
             //WASD, space+ Z
             if (Input.GetKey(KeyCode.UpArrow))
             {
+                run = true;
                 transform.forward = new Vector3(-1, 0, 0);
                 transform.localPosition += transform.forward * Time.deltaTime * movingSpeed;
             }
             if (Input.GetKey(KeyCode.DownArrow))
             {
+                run = true;
                 transform.forward = new Vector3(1, 0, 0);
                 transform.localPosition += transform.forward * Time.deltaTime * movingSpeed;
             }
             if (Input.GetKey(KeyCode.LeftArrow))
             {
+                run = true;
                 transform.forward = new Vector3(0, 0, -1);
                 transform.localPosition += transform.forward * Time.deltaTime * movingSpeed;
             }
             if (Input.GetKey(KeyCode.RightArrow))
             {
+                run = true;
                 transform.forward = new Vector3(0, 0, 1);
                 transform.localPosition += transform.forward * Time.deltaTime * movingSpeed;
             }
             //jump
             if (Input.GetKeyDown(KeyCode.Return))
             {
-                playerRb.AddForce(forceDirection * forceAmount);
+                if (floor)
+                {
+                    playerRb.AddForce(forceDirection * forceAmount);
+                    jump = true;
+
+                    inair = true;
+                    floor = false;
+                }
             }
             //hit
             if (Input.GetKey(KeyCode.L))
@@ -128,11 +155,29 @@ public class PlayerSetting : MonoBehaviour
             }
         }
 
-        if (playerRb.velocity.y <= 0)
+        if (playerRb.velocity.y < 0)
         {
-
             playerRb.velocity += -Vector3.up *weight*0.01f;
         }
 
+        animator.SetBool("Run", run);
+        animator.SetBool("Jump", jump);
+
+        animator.SetBool("InAir", inair);
+        animator.SetBool("Hit", hit);
+        run = false;
+        jump = false;
+
+    }
+
+    public void OnCollisionEnter(Collision collision)
+    {
+            Debug.Log("collision detected");
+        if (collision.gameObject.tag == "Floor")
+        {
+            floor = true;
+            jump = false;
+            inair = false;
+        }
     }
 }
